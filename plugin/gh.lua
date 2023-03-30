@@ -6,6 +6,9 @@ local function gh_completion()
   local command_output = io.popen("gh __complete \"\"")
   local output_lines = {}
   for line in command_output:lines() do
+    if line:sub(1, 1) == ":" then
+      break
+    end
     table.insert(output_lines, line)
   end
   command_output:close()
