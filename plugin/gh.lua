@@ -4,12 +4,23 @@ local function gh_command_handler(args)
   print("Command passed: " .. args.args)
 end
 
-local function gh_completion()
+local function gh_completion(lead, line)
   local output_lines = {}
+
+  local args = {}
+  for arg in line:gmatch('%S+') do
+    if arg ~= 'GH' then
+      table.insert(args, arg)
+    end
+  end
+
+  if #args == 0 or lead == '' then
+    table.insert(args, '')
+  end
 
   local job = Job:new({
     command = 'gh',
-    args = { '__complete', '' },
+    args = { '__complete', unpack(args) },
     on_stdout = function(_, line)
       if line:sub(1, 1) == ":" then
         return
