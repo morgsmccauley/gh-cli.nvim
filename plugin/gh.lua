@@ -36,6 +36,8 @@ local function fetch_reviewers()
   return reviewers
 end
 
+local cache = {}
+
 local function gh_completion(lead, line)
   local output_lines = {}
 
@@ -50,12 +52,17 @@ local function gh_completion(lead, line)
     table.insert(args, '')
   end
 
-  vim.pretty_print(args)
   if args[#args] == '--reviewer' or args[#args] == '' and args[#args - 1] == '--reviewer' then
     return fetch_reviewers()
   end
 
-  local job = Job:new({
+  if cache[#args] then
+    -- remove previously cached subcommands to avoid re-showing them
+    table.remove(cache, #args + 1)
+    return cache[#args]
+  end
+
+  Job:new({
     command = 'gh',
     args = { '__complete', unpack(args) },
     on_stdout = function(_, line)
@@ -63,13 +70,16 @@ local function gh_completion(lead, line)
         return
       end
       local command = line:match('^(%S+)')
+      print('hi', command)
       if command then
         table.insert(output_lines, command)
       end
+    end,
+    on_exit = function()
+      print('called')
+      cache[#args] = output_lines
     end
-  })
-
-  job:sync()
+  }):sync()
 
   return output_lines
 end
