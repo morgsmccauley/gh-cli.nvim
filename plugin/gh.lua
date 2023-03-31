@@ -5,10 +5,29 @@ local function gh_command_handler(args)
   print(output)
 end
 
-local function fetch_reviewers()
+local function get_repo_name()
+  local name = ''
+
+  Job:new({
+    command = 'gh',
+    args = {
+      'repo',
+      'view',
+      '--json=owner',
+      '--jq=.owner.login'
+    },
+    on_stdout = function(_err, data)
+      name = data
+    end,
+  }):sync()
+
+  return name
+end
+
+local function fetch_reviewers(repo_name)
   local query = [[
     {
-      organization(login: "near") {
+      organization(login: "]] .. repo_name .. [[") {
         membersWithRole(first:10) {
           nodes {
             login
@@ -54,7 +73,7 @@ local function gh_completion(lead, line)
   end
 
   if args[#args] == '--reviewer' or args[#args] == '' and args[#args - 1] == '--reviewer' then
-    return fetch_reviewers()
+    return fetch_reviewers(get_repo_name())
   end
 
   if cache[#args] and not string.match(lead, '^-') then
