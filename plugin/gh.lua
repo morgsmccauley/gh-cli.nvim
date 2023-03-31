@@ -1,7 +1,8 @@
 local Job = require('plenary.job')
 
 local function gh_command_handler(args)
-  print("Command passed: " .. args.args)
+  local output = vim.fn.system('gh ' .. table.concat(args.fargs, ' '))
+  print(output)
 end
 
 local function fetch_reviewers()
@@ -70,13 +71,11 @@ local function gh_completion(lead, line)
         return
       end
       local command = line:match('^(%S+)')
-      print('hi', command)
       if command then
         table.insert(output_lines, command)
       end
     end,
     on_exit = function()
-      print('called')
       cache[#args] = output_lines
     end
   }):sync()
