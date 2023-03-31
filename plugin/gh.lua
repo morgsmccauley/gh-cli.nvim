@@ -57,9 +57,9 @@ local function gh_completion(lead, line)
     return fetch_reviewers()
   end
 
-  if cache[#args] then
+  if cache[#args] and not string.match(lead, '^-') then
     -- remove previously cached subcommands to avoid re-showing them
-    table.remove(cache, #args + 1)
+    -- table.remove(cache, #args + 1)
     return cache[#args]
   end
 
